@@ -1,0 +1,9 @@
+@import 'reveal.js/dist/reset.css';
+@import 'reveal.js/dist/reveal.css';
+@import 'reveal.js/dist/theme/dracula.css';
+@import 'reveal.js/plugin/highlight/monokai.css';
+
+.small-code {
+    font-size: 0.8em; /* Schriftgröße verringern */
+    line-height: 1.2; /* Abstand zwischen Zeilen */
+  }

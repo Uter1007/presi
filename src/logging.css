@@ -1,0 +1,7 @@
+.reveal table {
+    font-size: 0.6em; /* Verkleinert die Schrift */
+    table-layout: auto;
+    width: 100%; /* Passt die Breite an */
+    overflow-x: auto; /* Fügt horizontales Scrollen hinzu */
+    display: block; /* Erzwingt Blockdarstellung */
+  }

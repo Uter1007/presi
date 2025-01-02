@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../style.css" />
+    <title>X-State in the BackendWorld</title>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section><h2>X-State</h2></section>
+        <section data-include="../partials/intro.html"></section>
+        <section>
+          <section>
+            <h2>State Machines</h2>
+            <p>??? Why, What, When ???</p>
+          </section>
+          <section>
+            <h2>What is X-State</h2>
+            <p>
+              X-State is a library for creating, interpreting, and executing
+              finite state machines and statecharts, as well as managing
+              invocations of those machines as actors.
+            </p>
+            <p>
+              .... thanks for nothing, right? Let's try to make it more clear!
+            </p>
+          </section>
+          <section>
+            <img
+              src="../images/confusing_states.png"
+              alt="confusing_states"
+              style="width: 100%; height: auto"
+            />
+          </section>
+          <section>
+            <h2>It's like a software pattern</h2>
+            <p>
+              It helps you to manage the state of your application in a more
+              structured way. State Management is very well known in the
+              frontend world, but today we will also see how we can use it in
+              the backend world.
+            </p>
+            <p>
+              Let's see a typical refacotring of a simple if-else statement to a
+              state machine via X-State.
+            </p>
+          </section>
+          <section>
+            <h2>This can get messy / X-state to the rescue</h2>
+            <div>
+              <pre><code class="language-javascript small-code" data-line-numbers="1-19|20-32|34-52|55-63" data-trim data-noescape>
+                  export const PLAY_PHASES = {
+                    START: {
+                      next: "COUNTDOWN_3",
+                      durationRatio: 1,
+                      minDuration: 1000,
+                      countdown: 4,
+                      showTarget: false,
+                    },
+                    COUNTDOWN_3: {
+                      next: "COUNTDOWN_2",
+                      durationRatio: 0.5,
+                      minDuration: 400,
+                      countdown: 3,
+                      showTarget: false,
+                    },
+                    COUNTDOWN_2: {
+                      next: "COUNTDOWN_1",
+                      /* … */
+                    },
+                    COUNTDOWN_1: {
+                      next: "TURN",
+                      /* … */
+                    },
+                    TURN: {
+                      next: "COOLDOWN",
+                      /* … */
+                    },
+                    COOLDOWN: {
+                      next: "TURN",
+                      /* … */
+                    }
+                  };
+    
+                  function startPhase(key) {
+                    // If we’re just starting a turn
+                    if (key === "TURN") {
+                      // increment the turn count
+                      turns += 1;
+                      // reset the success/failure state to a neutral value
+                      turnState = TURN_STATE.INITIAL;
+                      // place the target at a random position
+                      targetPosition = getTargetPosition();
+                    }
+                  
+                    // If ending a turn, we check the component state
+                    // to see if we have registered a successful click
+                    // on the target
+                    if (key === "COOLDOWN") {
+                      if (turnState === TURN_STATE.SUCCESS) {
+                        successCount += 1;
+                      }
+                    }
+                  
+                    // Get config for this phase
+                    const phase = PLAY_PHASES[key];
+                    // update UI
+                    countdown = phase.countdown;
+                    showTarget = phase.showTarget;
+                    // schedule next phase
+                    timeout = setTimeout(
+                      () => startPhase(phase.next),
+                      Math.max(phase.minDuration, phase.durationRatio * $gameSpeed)
+                    );
+                  }
+                </code></pre>
+            </div>
+          </section>
+          <section>
+            <div>
+              <pre>
+                  <code class="language-javascript small-code" data-line-numbers="1-11|12-29|30-35|38-41|44-50|51-61" data-trim data-noescape>
+                      import { interpret, Machine } from "xstate";
+      
+                      const gameMachine = Machine({
+                        id: "game",
+                        initial: "setup",
+                        states: {
+                          setup: {
+                            on: {
+                              START_PLAYING: "playing",
+                            }
+                          },
+                          playing: {
+                            on: {
+                              SHOW_RESULTS: "results",
+                              SHOW_SETUP: "setup"
+                            },
+                            initial: "countdown",
+                            states: {
+                              countdown: {
+                                on: { NEXT: "turn" }
+                              },
+                              turn: {
+                                on: { NEXT: "cooldown" }
+                              },
+                              cooldown: {
+                                on: { NEXT: "turn" }
+                              }
+                            }
+                          },
+                          results: {
+                            on: {
+                              SHOW_SETUP: "setup"
+                            }
+                          }
+                        }
+                      });
+      
+                      const gameService = interpret(gameMachine);
+                      gameService.start();
+      
+                      export default gameService;
+      
+                      // Listen to state transitions
+                      onMount(() => {
+                        gameService.onTransition(startPhase);
+                      });
+                      onDestroy(() => {
+                        gameService.off(startPhase);
+                      });
+      
+                      function startPhase(state) {
+                        // state.value looks like: {playing: "countdown"}
+                        const key = state.value.playing;
+                        // 1. Perform side effects (update the UI):
+                        // …
+                        // 2. Set a timer for the next phase:
+                        const duration = $gamePhaseDurations[key];
+                        setTimeout(() => {
+                          gameService.send("NEXT");
+                        }, duration);
+                      }
+                  </code>
+                </pre>
+            </div>
+          </section>
+          <section>
+            <blockquote cite="https://fvsch.com/learning-xstate">
+              Would I use XState on a new project? Definitely. Being able to
+              reason about an app, screen or feature’s state by reading a
+              statechart definition is invaluable, and the visualizations are a
+              nice touch.
+            </blockquote>
+            <p>From: https://fvsch.com/learning-xstate</p>
+          </section>
+          <section>
+            <h3>Features of X-State</h3>
+            <ul>
+              <li>Visualize your state machines</li>
+              <li>Test your state machines</li>
+              <li>Interpret your state machines</li>
+              <li>Model your state machines</li>
+              <li>... and many more</li>
+            </ul>
+          </section>
+          <section>
+            <p>
+              <b style="color: red"> Please, don't get it wrong !!! </b>
+            </p>
+            <p>
+              X-State is <u>awesome</u> but it can be <u>complex</u> at the same
+              time !
+            </p>
+            <p>
+              You need different kind of thinking, but if you need to manage
+              complex states => think of X-State
+            </p>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h1>XState Features</h1>
+            <p>A comprehensive state machine library</p>
+          </section>
+
+          <section>
+            <h2>Hierarchical State Machines</h2>
+            <ul>
+              <li>
+                Supports <strong>nested states</strong> for complex logic.
+              </li>
+              <li>Encapsulates logic within parent states.</li>
+              <li>Modular and maintainable.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Parallel State Machines</h2>
+            <ul>
+              <li>Manages <strong>independent states concurrently</strong>.</li>
+              <li>
+                Useful for simultaneous aspects like playback and volume in a
+                music player.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Guards (Conditions)</h2>
+            <ul>
+              <li>Defines <strong>conditional transitions</strong>.</li>
+              <li>
+                Uses Boolean functions to determine transitions based on context
+                or event data.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Context (Extended State)</h2>
+            <ul>
+              <li>
+                Maintains <strong>extended state</strong> (context) alongside
+                finite states.
+              </li>
+              <li>
+                Stores dynamic data that doesn’t fit into discrete states.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Actions</h2>
+            <ul>
+              <li>
+                Runs
+                <strong>entry, exit, and transition actions</strong> during
+                state transitions.
+              </li>
+              <li>Supports inline or reusable functions for side effects.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Delayed Transitions</h2>
+            <ul>
+              <li>Provides <strong>time-based transitions</strong>.</li>
+              <li>
+                Automatically moves between states after a specified delay.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Activities</h2>
+            <ul>
+              <li>
+                Supports <strong>long-running activities</strong> in a state.
+              </li>
+              <li>Activities can be stopped when leaving the state.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Invoked Services</h2>
+            <ul>
+              <li>
+                Integrates with
+                <strong>promises, observables, callbacks, or machines</strong>.
+              </li>
+              <li>
+                Handles asynchronous operations like API calls or external
+                systems.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>History States</h2>
+            <ul>
+              <li>
+                Remembers the <strong>last active sub-state</strong> within a
+                parent state.
+              </li>
+              <li>Useful for resuming previous states.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Event-Driven</h2>
+            <ul>
+              <li>State changes are triggered by <strong>events</strong>.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Typing and TypeScript Support</h2>
+            <ul>
+              <li>Provides strong <strong>TypeScript support</strong>.</li>
+              <li>Enables type inference for states, events, and context.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Statechart Standards Compliance</h2>
+            <ul>
+              <li>
+                Implements the
+                <strong>SCXML statechart specification</strong>.
+              </li>
+              <li>Compatible with broader state machine standards.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Visualizations</h2>
+            <ul>
+              <li>
+                Works with <strong>visualization tools</strong> for diagrams and
+                debugging.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Interpreters</h2>
+            <ul>
+              <li>
+                The <strong>Interpreter</strong> executes the state machine.
+              </li>
+              <li>Provides a real-time subscription API for state changes.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Snapshot Testing</h2>
+            <ul>
+              <li>
+                Supports <strong>state snapshots</strong> for testing state
+                transitions and logic.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Event Escalation</h2>
+            <ul>
+              <li>
+                Escalates errors or specific events up the state hierarchy.
+              </li>
+              <li>Enables centralized error handling.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Modularity and Composition</h2>
+            <ul>
+              <li>
+                Composes state machines into
+                <strong>larger, complex machines</strong>.
+              </li>
+              <li>Supports scalable design.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Persistence</h2>
+            <ul>
+              <li>
+                State and context can be
+                <strong>serialized and restored</strong>.
+              </li>
+              <li>Suitable for systems requiring session persistence.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Actors</h2>
+            <ul>
+              <li>
+                Provides a framework for
+                <strong>actor-based modeling</strong>.
+              </li>
+              <li>Each state machine acts as an independent actor.</li>
+            </ul>
+          </section>
+          <section>
+            Get more infos:
+            https://egghead.io/courses/introduction-to-state-machines-using-xstate
+          </section>
+        </section>
+        <section>
+          <section>
+            <h2>For the slow thinkers like me</h2>
+            <p>
+              Another example from
+              https://kyleshevlin.com/guidelines-for-state-machines-and-xstate/
+            </p>
+            <p>
+              Consider a light bulb. A light bulb typically has two states:
+              <u>lit</u> and <u>unlit</u>.
+            </p>
+          </section>
+          <section>
+            <h2>Why Booleans are a Misguided Approach</h2>
+            <p>We introduce a third state !!!</p>
+            <p>The light bulb could be broken</p>
+          </section>
+          <section>
+            <table>
+              <tr>
+                <td>isLit</td>
+                <td>isBroken</td>
+              </tr>
+              <tr>
+                <td>false</td>
+                <td>false</td>
+              </tr>
+              <tr>
+                <td>false</td>
+                <td>true</td>
+              </tr>
+              <tr>
+                <td>true</td>
+                <td>false</td>
+              </tr>
+              <tr>
+                <td>true</td>
+                <td>true</td>
+              </tr>
+            </table>
+          </section>
+          <section>
+            <h2>WTF 💥</h2>
+            <p>It's getting more complex, right?</p>
+            <p>State Explosion 2² => 2, 4, 8, 16, 32, 64, 128</p>
+            <p>Impossible State: IsLit && IsBroken</p>
+            <p>!!!State machines avoid this problem!!!</p>
+          </section>
+        </section>
+        <section>
+          <pre><code class="language-javascript small-code" data-line-numbers data-trim data-noescape>
+            import { Machine } from 'xstate'
+
+            const lightBulbMachine = Machine({
+              id: 'lightBulb',
+              initial: 'unlit',
+              states: {
+                lit: {
+                  on: {
+                    TURN_OFF: 'unlit',
+                    BREAK: 'broken',
+                  },
+                },
+                unlit: {
+                  on: {
+                    TURN_ON: 'lit',
+                    BREAK: 'broken',
+                  },
+                },
+                broken: {
+                  type: 'final',
+                },
+              },
+            })
+          </code></pre>
+        </section>
+        <section>
+          <h2>Ok ! I get it => now show me real code !</h2>
+          <p>CODING TIME ⌛</p>
+        </section>
+        <section data-include="../partials/outro.html"></section>
+      </div>
+    </div>
+    <script type="module" src="../main.js"></script>
+  </body>
+</html>

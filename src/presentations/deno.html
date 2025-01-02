@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../style.css" />
+    <title>DENO</title>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section><h2>DENO</h2></section>
+        <section data-include="../partials/intro.html"></section>
+        <section>
+          <section>
+            <h2>
+              DENO - the better NODE ?
+            </h2>
+            <p>
+              <ul>
+                <li>Created by Ryan Dahl (creator of Node.js)</li>
+                <li>Released in May 2018</li>
+                <li>Uses V8 like Nodejs</li>
+                <li>Written in Rust (rusty_v8)</li>
+              </ul>
+            </p>
+          </section>
+          <section>
+            <h2>Version 1</h2>
+            <p>
+              Let's call it prototype - it was a proof of concept IMHO.
+              Problems: Missing Package Manager and no real Showcase why it is so much better than Node.
+            </p>
+          </section>
+          <section>
+            <h2>Version 2</h2>
+            <p>
+              Now we are talking - it's a real thing!
+            </p>
+          </section>
+          <section>
+            <h2>Why Deno?</h2>
+            <ul>
+              <li>Security (Network, Filesystem, ENV)</li>
+              <li>Typescript (First Class Language Support & Zero Configuration!)</li>
+              <li>Browser Compatible (APIs)</li>
+              <li>Standard Library</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Developer Tools</h2>
+            <ul>
+              <li>Formatter \ Linter</li>
+              <li>Test Runner</li>
+              <li>Bundle</li>
+              <li>Doc</li>
+              <li>REPL</li>
+              <li>Debugger \ Dependency Inspector</li>
+              <li>more...</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+        <section>
+          <h2>Let's go</h2>
+          <p>https://docs.deno.com/runtime/getting_started/installation/</p>
+          <pre>
+            <code class="language-javascript small-code" data-line-numbers data-trim data-noescape>
+              deno init "pc-presi"
+
+              cd pc-presi
+
+              # Run the program
+              deno run main.ts
+            
+              # Run the program and watch for file changes
+              deno task dev
+            
+              # Run the tests
+              deno test
+            
+            </code>
+          </pre>
+        </section>
+
+        <section data-markdown>
+          <textarea data-template>
+            ## DENO CLI
+
+            ```shell
+            deno help  
+Deno: A modern JavaScript and TypeScript runtime
+
+Usage: deno [OPTIONS] [COMMAND]
+
+Commands:
+  Execution:
+    run          Run a JavaScript or TypeScript program, or a task
+                  deno run main.ts  |  deno run --allow-net=google.com main.ts  |  deno main.ts
+    serve        Run a server
+                  deno serve main.ts
+    task         Run a task defined in the configuration file
+                  deno task dev
+    repl         Start an interactive Read-Eval-Print Loop (REPL) for Deno
+    eval         Evaluate a script from the command line
+
+  Dependency management:
+    add          Add dependencies
+                  deno add jsr:@std/assert  |  deno add npm:express
+    install      Installs dependencies either in the local project or globally to a bin directory
+    uninstall    Uninstalls a dependency or an executable script in the installation root's bin directory
+    outdated     Find and update outdated dependencies
+    remove       Remove dependencies from the configuration file
+
+  Tooling:
+    bench        Run benchmarks
+                  deno bench bench.ts
+    check        Type-check the dependencies
+    clean        Remove the cache directory
+    compile      Compile the script into a self contained executable
+                  deno compile main.ts  |  deno compile --target=x86_64-unknown-linux-gnu
+    coverage     Print coverage reports
+    doc          Generate and show documentation for a module or built-ins
+                  deno doc  |  deno doc --json  |  deno doc --html mod.ts
+    fmt          Format source files
+                  deno fmt  |  deno fmt main.ts
+    info         Show info about cache or info related to source file
+    jupyter      Deno kernel for Jupyter notebooks
+    lint         Lint source files
+    init         Initialize a new project
+    test         Run tests
+                  deno test  |  deno test test.ts
+    publish      Publish the current working directory's package or workspace
+    upgrade      Upgrade deno executable to given version
+                  deno upgrade  |  deno upgrade 1.45.0  |  deno upgrade canary
+            ```
+          </textarea>
+        </section>
+
+        <section>
+          <h2>Modules</h2>
+          <p>
+            Deno uses ES modules as standard but also supports CommonJS modules (cjs extension).
+          </p>
+          <p>
+            With DENO 2.0 you can use JSR (JavaScript Registry) to import modules.
+            Also NPM modules are supported.
+          </p>
+          <p>Alternative you can import from URL directly (e.g.: DenoLand)</p>
+          <p>It caches automaticly remote modules</p>
+        </section>
+
+        <section>
+          <h2>meta.import</h2>
+          <p>
+            import.meta can provide information on the context of the module.
+            
+            https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta
+          </p>
+          <p>
+            In Node.js CommonJS modules, there's a __dirname variable that contains the absolute path to the 
+            folder containing current module, which is useful for resolving relative paths. 
+            However, ES modules cannot have contextual variables except for import.meta.
+          </p>
+          
+        </section>
+        <section>
+          <ul>
+            <li>
+            The boolean import.meta.main will let you know if the current module is the program entry point.
+          </li>
+          <li>
+            The string import.meta.url will give you the URL of the current module.
+          </li>
+          <li>
+            The string import.meta.filename will give you the fully resolved path to the current module. [local only]
+          </li>
+          <li>
+            The string import.meta.dirname will give you the fully resolved path to the directory containing the current module. [local only]
+          </li>
+          <li>
+            The string import.meta.resolve will give you a function that can be used to resolve module specifiers.
+          </li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h2>deno.json > package.json</h2>
+          <pre>
+            <code class="language-javascript small-code" data-line-numbers data-trim data-noescape>
+              {
+                "tasks": {
+                  "dev": "deno run --watch main.ts"
+                  "test": "deno test"
+                  "use-sequence-no-stop-on-error": "deno fmt ; deno lint"
+                  "use-sequence-stop-on-error": "deno fmt && deno lint"
+                  "use-backup-code-when-error": "deno fmt || deno lint"
+                  "use-async-code": "deno fmt & deno lint"
+                  "use-pipe": "deno fmt | deno lint > output.txt"
+                  "use-unix-tasks": "cp file1 file2 && rm file1"
+
+                },
+                "fmt": {
+                  "options": {
+                    "tabWidth": 2,
+                    "useTabs": false
+                  }
+                },
+                "lint": {
+                  "ignore": [
+                    "deps/*"
+                  ]
+                },
+                "compilerOptions": {
+                  "lib": ["dom", "esnext"],
+                  "module": "esnext",
+                  "target": "esnext",
+                  "strict": true
+                },
+                "imports": {
+                  "@std/assert": "jsr:@std/assert@1",
+                  "chalk": "npm:chalk@5",
+                  "foo": "./some/long/path/foo.ts",
+                }
+              }              
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h2>deno.json & package.json are supported !</h2>
+          <p>
+            If both a deno.json and package.json file are present in the same directory, 
+            Deno will understand dependencies specified in both deno.json and package.json; 
+            and use the deno.json file for Deno-specific configurations.
+          </p>
+        </section>
+
+
+        <section>
+          <h2>Typescript & JSX</h2>
+          <p>
+            Deno supports Typescript and JSX out of the box (kind of :D).
+          </p>
+          <p>
+            You need to download React from npm and import it in your code but no additional setup is needed.
+          </p>
+        </section>
+
+      </section>
+
+      <section>
+        <section>
+          <h2>Standard Library</h2>
+
+          <ul>
+            <li>File handling</li>
+            <li>Hash generation</li>
+            <li>
+              HTTP request management
+            </li>
+            <li>Input/output management
+            </li>
+            <li>
+              MIME type handling
+            </li>
+            <li>
+              WebSocket connections
+            </li>
+            <li>
+              Logging
+            </li>
+            <li>
+              Date and time management
+            </li>
+            <li>UUID generation
+            </li>
+            <li>
+              Cryptographic operations
+            </li>
+            <li>
+              Stream handling
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h2>ENV</h2>
+
+          <p>Like in Node you can add Environment variables via export in tasks direclty</p>
+
+          <pre><code>
+            export MY_ENV_VAR=123
+
+            Deno.env.get("MY_ENV_VAR")
+          </code></pre>
+
+          <p>Support .env Files but need to add the .env flag</p>
+        </section>
+        <section>
+          <h2>Benchmarks</h2>
+          <p>use Deno.bench(your function) even for your current typescript / javascript code !</p>
+
+          <pre><code>
+            Deno.bench(function bench() {
+              let a = 0;
+              for (let i = 0; i < 1000; i++) {
+                a = a + i;
+              }
+            });
+            
+            
+            Deno.bench(function bench() {
+              Array.from({ length: 1000 }, (_, i) => i).reduce((a, b) => a + b, 0);
+            });
+            </code></pre>
+        </section>
+  
+        <section>
+          <h2>Workspaces & Monorepos</h2>
+          <p>
+            Deno supports workspaces, also known as "monorepos", which allow you to manage multiple related and interdependent packages simultaneously.
+          </p>
+          <p>
+            A "workspace" is a collection of folders containing deno.json or package.json configuration files. The root deno.json file defines the workspace.
+          </p>
+
+        </section>
+
+        <section>
+          <h2>HTTP Server</h2>
+          <p>
+            Deno.serve is a simple HTTP server for serving static files.
+          </p>
+        </section>
+
+        <section>
+          <h2>Performance</h2>
+          <p>
+            https://dev.to/probir-sarkar/honojs-benchmark-nodejs-vs-deno-20-vs-bun-which-is-the-fastest-413j
+          </p>
+          <img
+          src="../images/js_frameworks_performance.png"
+          alt="confusing_states"
+          style="width: 100%; height: auto"
+        />
+        </section>
+        <section>
+          <h2>Performance</h2>
+          <p>
+            https://dev.to/probir-sarkar/honojs-benchmark-nodejs-vs-deno-20-vs-bun-which-is-the-fastest-413j
+          </p>
+          <img
+          src="../images/js_frameworks_performance2.png"
+          alt="confusing_states"
+          style="width: 100%; height: auto"
+        />
+        </section>
+      </section>
+
+        <section data-include="../partials/outro.html"></section>
+    </div>
+  </div>
+  <script type="module" src="../main.js"></script>
+</body>
+</html>
+      

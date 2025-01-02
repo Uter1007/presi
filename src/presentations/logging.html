@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../logging.css" />
+    <title>Logging @ LC</title>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section><h2>Logging @ Lean-Coders</h2></section>
+        <section data-include="../partials/intro.html"></section>
+        <section>
+          <section>
+            <h2>Disclamer</h2>
+            <p>You propably won't hear anything new in this presentation.</p>
+            <p>
+              No animals were harmed during the making of this presentation.
+            </p>
+            <p>
+              The only thing that I want to achieve is to create more awareness
+              about logging.
+            </p>
+          </section>
+          <section>
+            <h2>What is logging?</h2>
+            <p>
+              In computing, logging is the act of keeping a log of events that
+              occur in a computer system, such as problems, errors or just
+              information on current operations. These events may occur in the
+              operating system or in other software. A message or log entry is
+              recorded for each such event. These log messages can then be used
+              to monitor and understand the operation of the system, to debug
+              problems, or during an audit. Logging is particularly important in
+              multi-user software, to have a central overview of the operation
+              of the system. --Wikipedia
+            </p>
+          </section>
+          <section style="font-size: 0.7em;">
+            <h2>Types of logs</h2>
+              <ul>
+                <li>Event logs</li>
+                <li>Error logs</li>
+                <li>Audit logs</li>
+                <li>Transaction logs</li>
+                <li>Security logs</li>
+                <li>System logs</li>
+                <li>Application logs</li>
+                <li>Debug logs</li>
+                <li>Access logs</li>
+                <li>Performance logs</li>
+                <li>System logs</li>
+                <li>Custom logs</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2>Bad Practices</h2>
+              <pre><code class="language-javascript small-code" data-line-numbers data-trim data-noescape>
+                  console.log("Something went wrong");
+
+                  console.log("error: " + err.message);
+                  console.error("faszom"); // Hungarian bad word
+                  console.log("finished at: " + Date.now());
+                </code></pre>
+              <p>
+                As a senior consultant you have this super power to identify
+                code smells. You maybe don't know why it's bad but you know it's
+                bad.
+              </p>
+            </section>
+            <section>
+              <h2>Dimensions of good logs</h2>
+              <ul>
+                <li>Context = THE WHAT!</li>
+                <li>Purpose = THE WHY!</li>
+                <li>Format = THE HOW!</li>
+                <li>Importance</li>
+              </ul>
+            </section>
+            <section data-markdown>
+              <textarea data-template>
+                ## Bad Format
+
+                ```js [1|2|3]
+                user 32 logged in at 152213124234234
+                fatal error: [object Object]
+                got some Data: [[object Object], [object Object], [object Object],
+                ```
+              </textarea>
+            </section>
+            <section data-markdown>
+              <textarea data-template>
+                ## Good Format
+                ```js [1|2|3|4-8]
+                [Tue, 03 Apr 2018 14:00:00 GMT] [INFO] User [32] Logged in 
+                [Tue, 03 Apr 2018 14:00:00 GMT] [ERROR] Can not load Data [Too many SQL Connections ... Stacktrace]
+                [Tue, 03 Apr 2018 14:00:00 GMT] [DEBUG] Got some Data from [82.48.0.23]
+
+                {
+                  "timestamp": "Tue, 03 Apr 2018 14:00:00 GMT",
+                  "level": "INFO",
+                  "message": "User 32 Logged in"
+                }
+                ```
+              </textarea>
+            </section>
+            <section data-markdown>
+              <textarea data-template>
+                ## Bad Context
+                ```js [1-3|4|5]
+                a user logged in
+                a user logged in
+                a user logged in
+                a user logged in
+                error
+                got some data
+                ```
+              </textarea>
+            </section>
+            <section data-markdown>
+              <textarea data-template>
+                ## Good Context
+                ```js [1-4|5|6]
+                [Tue, 03 Apr 2018 14:00:00 GMT] [INFO] User [32] Logged in
+                [Tue, 03 Apr 2018 14:00:00 GMT] [INFO] User [32] Logged in
+                [Tue, 03 Apr 2018 14:00:00 GMT] [INFO] User [32] Logged in
+                [Tue, 03 Apr 2018 14:00:00 GMT] [INFO] User [32] Logged in
+                [Tue, 03 Apr 2018 14:00:00 GMT] [ERROR] Can not load Data [Too many SQL Connections ... Stacktrace]
+                [Tue, 03 Apr 2018 14:00:00 GMT] [DEBUG] Got some Data from [82.48.0.23]
+                ```
+              </textarea>
+            </section>
+            <section>
+              <h2>Tools</h2>
+              <ul>
+                <li>[Logz.io](https://logz.io/)</li>
+                <li>[Loggly](https://www.loggly.com/)</li>
+                <li>[Papertrail](https://papertrailapp.com/)</li>
+                <li>[LogDNA](https://logdna.com/)</li>
+                <li>[Sentry](https://sentry.io/)</li>
+                <li>[LogRocket](https://logrocket.com/)</li>
+                <li>
+                  [Kibana | Elasticsearch |
+                  Logstash](https://www.elastic.co/kibana)
+                </li>
+                <li>[Sematext](https://sematext.com/)</li>
+                <li>And so many more: Log4j, NLog, PinoJS, Winston, etc...</li>
+              </ul>
+            </section>
+            <section>
+              <h2>Console.log</h2>
+              <p>
+                Console.* (console.log, console.error, console.warn,
+                console.info, console.debug, console.trace)
+              </p>
+              <p>The least you can do...</p>
+            </section>
+            <section>
+              <h2>Severity</h2>
+              <ul>
+                <li>DEBUG / TRACE / SILLY</li>
+                <li>INFO / LOG</li>
+                <li>WARN</li>
+                <li>ERROR</li>
+                <li>FATAL</li>
+              </ul>
+            </section>
+            <section data-markdown>
+              <textarea data-template>
+                ## What is the goal
+
+                | Name        | Goal          | Question                              | Content                | Audience   |
+                |-------------|---------------|---------------------------------------|------------------------|------------|
+                | Tracing     | Debugging     | How'd we get here | State Change      | Developers             |            |
+                | Monitoring  | Performance   | Are you function correctly ?          | Performance Metrics    | DevOps     |
+                | Auditing    | Compliance    | How many Users are using the system ? | User Activity          | Security   |
+                | Alerting    | Notification  | Is the system down ?                  | System Status          | Operations |
+              </textarea>
+            </section>
+            <section>
+              <h2>Logging Golden Rules</h2>
+              <ul>
+                <li>Remember the reader</li>
+                <li>No Personal Data / NO SECRETS !!!</li>
+                <li>Answer the questions from the table before</li>
+              </ul>
+              <p>
+                e.g: Answer the Question => How did we get here? Are you function correctly ? How many Users are using the system ? Is the system down ?
+              </p>
+            </section>
+            <section data-markdown>
+              <textarea data-template>
+                ## My Own suggestions
+                - If you can't set the format of the logger or can not use json then use the following format in your message
+                ```js 
+                [Date] [Severity] [Context] [CorrelationID/RequestID] [Message] ?[Data] ?[stacktrace]
+                [Tue, 03 Apr 2018 14:00:00 GMT] [INFO] [123e4567-e89b-12d3-a456-426655440000] [User] [32] Logged in [82.48.0.23]
+                [Tue, 03 Apr 2018 14:00:00 GMT] [ERROR] [123e4567-e89b-12d3-a456-426655440000] [Data] [Too many SQL Connections] [Stacktrace: ...]
+                [Tue, 03 Apr 2018 14:00:00 GMT] [INFO] [123e4567-e89b-12d3-a456-426655440000] [Performance] [Loading took] [44ms] 
+                ```
+              </textarea>
+            </section>
+          </section>
+          <section>
+            <h2>Gotchas</h2>
+            <ul>
+              <li>Timestamps maybe not correct</li>
+              <li>Don't overengineer</li>
+              <li>Check your logs when you are done (test them out!)</li>
+              <li>centralize your logs</li>
+              <li>make them searchable (and parsable)</li>
+              <li>use the libs</li>
+              <li>don't log sensitive data</li>
+            </ul>
+          </section>
+        </section>
+
+        <section data-include="../partials/outro.html"></section>
+      </div>
+    </div>
+    <script type="module" src="../main.js"></script>
+  </body>
+</html>
